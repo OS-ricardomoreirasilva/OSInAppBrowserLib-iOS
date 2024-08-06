@@ -1,24 +1,39 @@
 import SwiftUI
+import UIKit
 
 /// View that manages which view to present, depending if the page load was successful or not or is being loaded.
-struct OSIABWebViewWrapper: View {
+@available(iOS, deprecated: 14.0, message: "Use OSIABWebViewWrapperView for iOS 14.0+")
+struct OSIABWebView13WrapperView: View {
     /// View Model containing all the customisable elements.
-    @StateObject private var model: OSIABWebViewModel
+    @ObservedObject private var model: OSIABWebViewModel
     
     /// Constructor method.
     /// - Parameter model: View Model containing all the customisable elements.
     init(_ model: OSIABWebViewModel) {
-        self._model = StateObject(wrappedValue: model)
+        self._model = ObservedObject(wrappedValue: model)
     }
     
     var body: some View {
         ZStack {
             OSIABWebView(model)
-                .ignoresSafeArea(edges: model.toolbarPosition == .bottom ? [] : .bottom)
+                .edgesIgnoringSafeArea(model.toolbarPosition == .bottom ? [] : .bottom)
             if model.isLoading {
-                ProgressView()
+                OSIABActivityIndicator(isAnimating: .constant(true), style: .large)
             }
         }
+    }
+}
+
+private struct OSIABActivityIndicator: UIViewRepresentable {
+    @Binding var isAnimating: Bool
+    let style: UIActivityIndicatorView.Style
+
+    func makeUIView(context: UIViewRepresentableContext<OSIABActivityIndicator>) -> UIActivityIndicatorView {
+        return UIActivityIndicatorView(style: style)
+    }
+
+    func updateUIView(_ uiView: UIActivityIndicatorView, context: UIViewRepresentableContext<OSIABActivityIndicator>) {
+        isAnimating ? uiView.startAnimating() : uiView.stopAnimating()
     }
 }
 
@@ -56,23 +71,23 @@ private extension OSIABWebViewModel {
 }
 
 #Preview("Default - Light Mode") {
-    OSIABWebViewWrapper(.init())
+    OSIABWebView13WrapperView(.init())
 }
 
 #Preview("Default - Dark Mode") {
-    OSIABWebViewWrapper(.init())
+    OSIABWebView13WrapperView(.init())
         .preferredColorScheme(.dark)
 }
 
 #Preview("Bottom Toolbar Defined") {
-    OSIABWebViewWrapper(.init(toolbarPosition: .bottom))
+    OSIABWebView13WrapperView(.init(toolbarPosition: .bottom))
 }
 
 #Preview("Error View - Light mode") {
-    OSIABWebViewWrapper(.init(url: "https://outsystems/"))
+    OSIABWebView13WrapperView(.init(url: "https://outsystems/"))
 }
 
 #Preview("Error View - Dark mode") {
-    OSIABWebViewWrapper(.init(url: "https://outsystems/"))
+    OSIABWebView13WrapperView(.init(url: "https://outsystems/"))
         .preferredColorScheme(.dark)
 }
